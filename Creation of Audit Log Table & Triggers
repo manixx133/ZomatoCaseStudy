@@ -2,7 +2,7 @@ USE [zomato]
 GO
 
 --Audit Log Table creation--
-CREATE TABLE AuditLog (
+CREATE TABLE [zomato].[data].[AuditLog] (
     ID int IDENTITY(1,1),
 	NAME nvarchar(1000) NOT NULL,
 	URL nvarchar(1000) NOT NULL,
