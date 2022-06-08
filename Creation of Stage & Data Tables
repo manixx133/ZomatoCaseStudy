@@ -1,0 +1,65 @@
+USE [zomato]
+GO
+
+-- creation of staging table: CSV --
+CREATE TABLE [stage].[tbl_csv](
+	[NAME] [nvarchar](1000) NULL,
+	[PRICE] [nvarchar](1000) NULL,
+	[CUSINE_CATEGORY] [nvarchar](1000) NULL,
+	[CITY] [nvarchar](1000) NULL,
+	[REGION] [nvarchar](1000) NULL,
+	[URL] [nvarchar](1000) NULL,
+	[PAGE_NO] [nvarchar] (1000) NULL,
+	[CUSINE_TYPE] [nvarchar](1000) NULL,
+	[TIMING] [nvarchar](1000) NULL,
+	[RATING_TYPE] [nvarchar](1000) NULL,
+	[RATING] [nvarchar] (1000) NULL,
+	[VOTES] [nvarchar] (1000) NULL
+)
+
+-- creation of staging table: Coordinates --
+CREATE TABLE [stage].[tbl_coordinates]
+(
+URL VARCHAR(1000) NULL,
+COORDINATES VARCHAR(100) NULL
+)
+
+-- creation of Data fact table: Restaurant --
+CREATE TABLE [data].[tbl_restaurant]
+(
+	[REST_ID] INT PRIMARY KEY IDENTITY(1,1),
+	[NAME] [nvarchar](1000) NULL,
+	[PRICE] [nvarchar](1000) NULL,
+	[CUSINE_ID] INT NULL,
+	[CITY_ID] INT NULL,
+	[PAGE_NO] [nvarchar] (1000) NULL,
+	[CUSINE_TYPE] [nvarchar](1000) NULL,
+	[TIMING] [nvarchar](1000) NULL,
+	[RATING_TYPE] [nvarchar](1000) NULL,
+	[RATING] [nvarchar] (1000) NULL,
+	[VOTES] [nvarchar] (1000) NULL,
+	[URL] [nvarchar](1000) NULL
+)
+
+-- creation of Data dimension table: Cusine category --
+CREATE TABLE [data].[tbl_cusine_cat]
+(
+	CUSINE_ID INT PRIMARY KEY IDENTITY(1,1),
+	CUSINE_CATEGORY VARCHAR(1000)
+)
+
+-- creation of Data dimension table: Cityregion --
+CREATE TABLE [data].[tbl_cityregion]
+(
+	CITY_ID INT PRIMARY KEY IDENTITY(1,1),
+	CITY VARCHAR(1000),
+	REGION VARCHAR(1000)
+)
+
+-- creation of Data dimension table: Coordinates --
+CREATE TABLE [data].[tbl_coordinates]
+(
+	URL VARCHAR(1000) PRIMARY KEY,
+	COORD1 VARCHAR(100) NULL,
+	COORD2 VARCHAR(100) NULL
+)
