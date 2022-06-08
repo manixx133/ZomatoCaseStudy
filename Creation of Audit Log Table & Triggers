@@ -1,0 +1,99 @@
+USE [zomato]
+GO
+
+--Audit Log Table creation--
+CREATE TABLE AuditLog (
+    ID int IDENTITY(1,1),
+	NAME nvarchar(1000) NOT NULL,
+	URL nvarchar(1000) NOT NULL,
+    OldRowData nvarchar(3000) CHECK(ISJSON(OldRowData) = 1),
+    NewRowData nvarchar(3000) CHECK(ISJSON(NewRowData) = 1),
+    DmlType varchar(10) NOT NULL CHECK (DmlType IN ('INSERT', 'UPDATE', 'DELETE')),
+    DmlTimestamp datetime NOT NULL,
+    DmlCreatedBy varchar(255) NOT NULL,
+    TrxTimestamp datetime NOT NULL
+	)  
+
+--Insert Audit Trigger--
+CREATE TRIGGER Insert_AuditLog ON [zomato].[data].[tbl_restaurant]
+FOR INSERT AS
+BEGIN
+        
+    DECLARE @transactionTimestamp datetime = SYSUTCdatetime()
+     
+    INSERT INTO AuditLog (
+        [NAME],
+		[URL],
+        OldRowData,
+        NewRowData,
+        DmlType,
+        DmlTimestamp,
+        DmlCreatedBy,
+        TrxTimestamp
+    )
+    VALUES(
+        (SELECT Inserted.NAME FROM Inserted),
+		(SELECT Inserted.URL FROM Inserted),
+        null,
+        (SELECT Inserted.* FROM Inserted FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+        'INSERT',
+        CURRENT_TIMESTAMP,
+        SYSTEM_USER,
+        @transactionTimestamp
+    );
+END
+
+--Update Audit Trigger--
+CREATE TRIGGER Update_AuditLog ON [zomato].[data].[tbl_restaurant]
+FOR UPDATE AS
+BEGIN
+     
+    DECLARE @transactionTimestamp datetime = SYSUTCdatetime()
+    INSERT INTO AuditLog (
+        [NAME],
+		[URL],
+        OldRowData,
+        NewRowData,
+        DmlType,
+        DmlTimestamp,
+        DmlCreatedBy,
+        TrxTimestamp
+    )
+    VALUES(
+        (SELECT Inserted.NAME FROM Inserted),
+		(SELECT Inserted.URL FROM Inserted),
+        (SELECT * FROM Deleted FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+        (SELECT * FROM Inserted FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+        'UPDATE',
+        CURRENT_TIMESTAMP,
+        SYSTEM_USER,
+        @transactionTimestamp
+    );
+END
+
+--Delete Audit Trigger--
+CREATE TRIGGER Delete_AuditLog ON [zomato].[data].[tbl_restaurant]
+FOR DELETE AS
+BEGIN
+    DECLARE @transactionTimestamp datetime = SYSUTCdatetime()
+    INSERT INTO AuditLog (
+        [NAME],
+		[URL],
+        OldRowData,
+        NewRowData,
+        DmlType,
+        DmlTimestamp,
+        DmlCreatedBy,
+        TrxTimestamp
+    )
+    VALUES(
+        (SELECT Deleted.NAME FROM Deleted),
+		(SELECT Deleted.URL FROM Deleted),
+        (SELECT * FROM Deleted FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+        null,
+        'DELETE',
+        CURRENT_TIMESTAMP,
+        SYSTEM_USER,
+        @transactionTimestamp
+    );
+END
